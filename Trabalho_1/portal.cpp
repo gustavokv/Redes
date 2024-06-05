@@ -20,7 +20,7 @@ int main(int argc, char *argv[]) {
     memset((void *)&meu_addr, 0, sizeof(struct sockaddr_in));
     meu_addr.sin_family = AF_INET;
     meu_addr.sin_addr.s_addr = INADDR_ANY;
-    meu_addr.sin_port = htons(47015);
+    meu_addr.sin_port = htons(47006);
 
     if ((meu_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1) {
         perror("[Portal] Falha ao criar o socket");
