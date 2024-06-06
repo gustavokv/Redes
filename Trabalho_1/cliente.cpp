@@ -2,6 +2,9 @@
 #include <unistd.h>
 #include <string>
 #include <cstring>
+#include <dirent.h>
+#include <sstream>
+#include <fstream>
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -12,6 +15,9 @@
 #include "includes/clienteUteis.h"
 
 using namespace std;
+
+void le_diretorio_funcao_L();
+void le_diretorio_funcao_S(string);
 
 int main(int argc, char *argv[]){
     if(argc != 3)
@@ -55,11 +61,10 @@ int main(int argc, char *argv[]){
         getline(cin, cmd);
         
         if(cmd.substr(0, cmd.find(' ')) == "S"){ /* Comando para enviar os códigos fonte */
-
+            le_diretorio_funcao_S(cmd);
         }
-        else if(cmd.substr(0, cmd.find(' ')) == "L"){ /* Lista os códigos fonte para serem enviados */
-
-        }
+        else if(cmd.substr(0, cmd.find(' ')) == "L") /* Lista os códigos fonte para serem enviados */
+            le_diretorio_funcao_L();
 
         // enviados = send(meu_socket, msg, strlen(msg), 0);
         
@@ -74,4 +79,39 @@ int main(int argc, char *argv[]){
     close(meu_socket);
 
     return 0;
+}
+
+void le_diretorio_funcao_S(string cmd){
+    DIR* dirp = opendir("./arquivos_fonte/");
+    struct dirent *dp;
+
+    istringstream tokenizer {cmd};
+    string token;
+
+    while(tokenizer >> token){
+        if(token != "S"){
+            while ((dp = readdir(dirp)) != NULL) {
+                if(dp->d_name == token){
+                    
+                }            
+            }
+            closedir(dirp);
+            dirp = opendir("./arquivos_fonte/");
+        }
+    }
+
+    closedir(dirp);
+}
+
+void le_diretorio_funcao_L(){
+    DIR* dirp = opendir("./arquivos_fonte/");
+
+    struct dirent *dp;
+
+    while ((dp = readdir(dirp)) != NULL) {
+        if(strcmp(dp->d_name, ".") != 0 && strcmp(dp->d_name, "..") != 0)
+            cout << dp->d_name << endl;
+    }
+
+    closedir(dirp);
 }
