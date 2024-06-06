@@ -53,7 +53,7 @@ int main(int argc, char *argv[]){
 
     do{
         getline(cin, cmd);
-
+        
         if(cmd.substr(0, cmd.find(' ')) == "S"){ /* Comando para enviar os códigos fonte */
 
         }
@@ -61,14 +61,14 @@ int main(int argc, char *argv[]){
 
         }
 
-        enviados = send(meu_socket, msg, strlen(msg), 0);
+        // enviados = send(meu_socket, msg, strlen(msg), 0);
         
-        //Após enviar a mensagem espera-se a resposta do servidor
+        // //Após enviar a mensagem espera-se a resposta do servidor
 
-        recebidos = recv(meu_socket, resposta, strlen(resposta), 0);
-        resposta[recebidos] = '\0';
+        // recebidos = recv(meu_socket, resposta, strlen(resposta), 0);
+        // resposta[recebidos] = '\0';
 
-        printf("Servidor: %s\n", resposta);
+        // printf("Servidor: %s\n", resposta);
     }while(1);
 
     close(meu_socket);
