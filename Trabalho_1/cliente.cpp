@@ -17,7 +17,6 @@
 using namespace std;
 
 void le_diretorio_funcao_L();
-void le_diretorio_funcao_S(string);
 
 int main(int argc, char *argv[]){
     if(argc != 3)
@@ -51,29 +50,55 @@ int main(int argc, char *argv[]){
 
     cout << "Conectado." << endl;
 
-    string cmd;
-    
-    int recebidos, enviados;
-    char msg[256];
-    char resposta[256];
+    string cmd, resposta;
 
     do{
         getline(cin, cmd);
         
         if(cmd.substr(0, cmd.find(' ')) == "S"){ /* Comando para enviar os códigos fonte */
-            le_diretorio_funcao_S(cmd);
+            DIR* dirp = opendir("./arquivos_fonte/");
+            struct dirent *dp;
+
+            istringstream tokenizer {cmd};
+            string token;
+
+            char dir[100], cDir;
+            ifstream arq;
+            string arqFonte;
+
+            /* Separa os arquivos para serem enviados em tokens, abre eles, lê o conteúdo e envia ao portal */
+            while(tokenizer >> token){
+                if(token != "S"){
+                    while ((dp = readdir(dirp)) != NULL) {
+                        if(dp->d_name == token){
+                            strcpy(dir, "./arquivos_fonte/");
+                            strcat(dir, dp->d_name);
+
+                            arq.open(dir);
+
+                            while(arq.get(cDir))
+                                arqFonte += cDir;                              
+
+                            send(meu_socket, arqFonte.c_str(), arqFonte.length(), 0);
+
+                            arqFonte.clear();
+                            arq.close();
+                        }            
+                    }
+                    closedir(dirp);
+                    dirp = opendir("./arquivos_fonte/");
+                }
+            }
+
+            closedir(dirp);
         }
         else if(cmd.substr(0, cmd.find(' ')) == "L") /* Lista os códigos fonte para serem enviados */
             le_diretorio_funcao_L();
 
-        // enviados = send(meu_socket, msg, strlen(msg), 0);
-        
-        // //Após enviar a mensagem espera-se a resposta do servidor
+        recv(meu_socket, &(resposta[0]), resposta.length(), 0);
+        resposta += '\0';
 
-        // recebidos = recv(meu_socket, resposta, strlen(resposta), 0);
-        // resposta[recebidos] = '\0';
-
-        // printf("Servidor: %s\n", resposta);
+        cout << resposta << endl;
     }while(1);
 
     close(meu_socket);
@@ -81,28 +106,7 @@ int main(int argc, char *argv[]){
     return 0;
 }
 
-void le_diretorio_funcao_S(string cmd){
-    DIR* dirp = opendir("./arquivos_fonte/");
-    struct dirent *dp;
-
-    istringstream tokenizer {cmd};
-    string token;
-
-    while(tokenizer >> token){
-        if(token != "S"){
-            while ((dp = readdir(dirp)) != NULL) {
-                if(dp->d_name == token){
-                    
-                }            
-            }
-            closedir(dirp);
-            dirp = opendir("./arquivos_fonte/");
-        }
-    }
-
-    closedir(dirp);
-}
-
+/* Mostra todos os arquivos disponíveis para enviar ao portal */
 void le_diretorio_funcao_L(){
     DIR* dirp = opendir("./arquivos_fonte/");
 
