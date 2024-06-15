@@ -13,6 +13,7 @@
 #include <netdb.h>
 
 #include "includes/clienteUteis.h"
+#include "includes/EnderecoHandler.h"
 
 using namespace std;
 
@@ -33,17 +34,11 @@ int main(int argc, char *argv[]){
     else
         strcpy(ip_portal, id_portal);
 
-    struct sockaddr_in addr_portal;
+    EnderecoHandler addr_portal(ip_portal, porta_portal);
 
-    addr_portal.sin_family = AF_INET;
-    addr_portal.sin_port = htons(porta_portal);
-    addr_portal.sin_addr.s_addr = inet_addr(ip_portal);
+    addr_portal.bindarComSocket(meu_socket);
 
-    memset(&addr_portal.sin_zero, 0, sizeof(addr_portal.sin_zero));
-
-    bind(meu_socket, (sockaddr*)&addr_portal, sizeof(sockaddr));
-
-    if(connect(meu_socket, (struct sockaddr*)&addr_portal, sizeof(addr_portal)) == -1){
+    if(connect(meu_socket, (struct sockaddr*)addr_portal.getAddrAddr(), sizeof(addr_portal.getAddr())) == -1){
         cout << "Erro em se conectar ao servidor." << endl;
         return 1;
     }
