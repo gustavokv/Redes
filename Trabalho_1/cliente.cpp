@@ -77,10 +77,10 @@ int main(int argc, char *argv[]){
                             arq.open(dir);
 
                             while(arq.get(cDir))
-                                arqFonte += cDir;                              
-
+                                arqFonte += cDir;      
+                            
                             send(meu_socket, arqFonte.c_str(), arqFonte.length(), 0);
-
+                            
                             arqFonte.clear();
                             arq.close();
                         }            
@@ -95,10 +95,10 @@ int main(int argc, char *argv[]){
         else if(cmd.substr(0, cmd.find(' ')) == "L") /* Lista os códigos fonte para serem enviados */
             le_diretorio_funcao_L();
 
-        recv(meu_socket, &(resposta[0]), resposta.length(), 0);
-        resposta += '\0';
+        // recv(meu_socket, &(resposta[0]), resposta.length(), 0);
+        // resposta += '\0';
 
-        cout << resposta << endl;
+        // cout << resposta << endl;
     }while(1);
 
     close(meu_socket);
@@ -109,13 +109,19 @@ int main(int argc, char *argv[]){
 /* Mostra todos os arquivos disponíveis para enviar ao portal */
 void le_diretorio_funcao_L(){
     DIR* dirp = opendir("./arquivos_fonte/");
+    unsigned int quantDir=0;
 
     struct dirent *dp;
 
     while ((dp = readdir(dirp)) != NULL) {
         if(strcmp(dp->d_name, ".") != 0 && strcmp(dp->d_name, "..") != 0)
             cout << dp->d_name << endl;
+
+        quantDir++;
     }
+
+    if(quantDir == 0)
+        cout << "L 0" << endl;
 
     closedir(dirp);
 }
