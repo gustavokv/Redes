@@ -55,7 +55,8 @@ void *recebe_arquivos_fonte(void *meu_socket){
 
 	//receber mensagem do cliente
 	while((tamanho_dado_lido = recv(sock, mensagem_cliente, 2000, 0)) > 0){
-		write(sock, mensagem_cliente, strlen(mensagem_cliente));
+		// write(sock, mensagem_cliente, strlen(mensagem_cliente));
+		cout << mensagem_cliente << endl;
 		memset(mensagem_cliente, 0, 2000);
 	}
 
