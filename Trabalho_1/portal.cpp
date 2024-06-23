@@ -43,12 +43,26 @@ void *recebe_arquivos_fonte(void *meu_socket){
 	int sock = *(int*)meu_socket;
 	int tamanho_dado_lido;
 	char arq_fonte[5000];
+	int meu_socket_server; 
+	EnderecoHandler addrServidores((char*)"192.168.0.9", 18900);
 	//EnderecoHandler addrServidores[3] = {EnderecoHandler(ip_maquina_1_aqui, 18900), EnderecoHandler(ip_maquina_2_aqui, 18901), EnderecoHandler(ip_maquina_3_aqui, 18902)};
+
+	meu_socket_server = socket(AF_INET, SOCK_STREAM, 0);
+	addrServidores.bindarComSocket(meu_socket_server);
+
+	cout << meu_socket_server << endl;
+
+	if(connect(meu_socket_server, (struct sockaddr*)addrServidores.getAddrAddr(), sizeof(addrServidores.getAddr())) == -1){
+        cout << "Erro em se conectar ao servidor." << endl;
+        return 0;
+    }
+
+	cout << "Conectado" << endl;
 
 	//receber mensagem do cliente
 	while((tamanho_dado_lido = recv(sock, arq_fonte, 5000, 0)) > 0){
 
-
+		send(meu_socket_server, arq_fonte, strlen(arq_fonte), 0);
 		cout << arq_fonte << endl;
 		memset(arq_fonte, 0, 5000);
 	}
