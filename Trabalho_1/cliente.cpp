@@ -71,6 +71,8 @@ int main(int argc, char *argv[]){
 
                             arq.open(dir);
 
+                            arqFonte += dp->d_name;
+                            arqFonte += " ";
                             while(arq.get(cDir))
                                 arqFonte += cDir;      
                             
