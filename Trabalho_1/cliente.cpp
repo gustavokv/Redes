@@ -45,7 +45,9 @@ int main(int argc, char *argv[]){
 
     cout << "Conectado." << endl;
 
-    string cmd, resposta;
+    string cmd;
+    char resposta[1000];
+    int recebidos;
 
     do{
         getline(cin, cmd);
@@ -77,6 +79,11 @@ int main(int argc, char *argv[]){
                                 arqFonte += cDir;      
                             
                             send(meu_socket, arqFonte.c_str(), arqFonte.length(), 0);
+
+                            recebidos = recv(meu_socket, resposta, 1000, 0);
+                            resposta[recebidos] = '\0';
+
+                            cout << resposta << endl;
                             
                             arqFonte.clear();
                             arq.close();
@@ -91,11 +98,6 @@ int main(int argc, char *argv[]){
         }
         else if(cmd.substr(0, cmd.find(' ')) == "L") /* Lista os códigos fonte para serem enviados */
             le_diretorio_funcao_L();
-
-        // recv(meu_socket, &(resposta[0]), resposta.length(), 0);
-        // resposta += '\0';
-
-        // cout << resposta << endl;
     }while(1);
 
     close(meu_socket);

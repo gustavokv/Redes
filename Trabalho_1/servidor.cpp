@@ -24,7 +24,7 @@ int main(){
 
     meu_addr.bindarComSocket(meu_socket);
 
-    listen(meu_socket, 1);
+    listen(meu_socket, 3);
 
     addr_len = sizeof(struct sockaddr_in);
 
@@ -54,26 +54,16 @@ void coloca_em_arquivo(string arq_fonte, string *nome_fonte){
 
 void le_arquivo_insere_array(string *resultado){
 	FILE *fp_in = popen("./a.out", "r");
+	char c;
 
-	cout << fp_in << endl;
-	fseek(fp_in, 0L, SEEK_END); 
-    unsigned int tam = ftell(fp_in);
-    rewind(fp_in);
-	
-	char array[tam];
-
-	fgets(array, tam, fp_in);
-	
-	cout << "1 " << array << endl;
-	*resultado = array;
-
-	cout << "2" << *resultado << endl;
+	while(fread(&c, sizeof(char), 1, fp_in))
+		*resultado += c;
 
 	fclose(fp_in);
 }
 
 void *compila_arquivos_fonte(void *meu_socket){
-    int sock = *(int*)meu_socket;
+    int sock = *(int*)meu_socket, enviados;
 	int tamanho_dado_lido;
 	char arq_fonte[5000], comandoComp[100];
 	string nome_fonte, resultado;
@@ -87,12 +77,15 @@ void *compila_arquivos_fonte(void *meu_socket){
 		strcpy(comandoComp, "g++ ");
 		strcat(comandoComp, nome_fonte.c_str());
 
-		system(comandoComp);
-
+		system(comandoComp); //Compila o arquivo
+		
 		le_arquivo_insere_array(&resultado);
 
-		cout << resultado << endl;
-
+		send(sock, resultado.c_str(), resultado.length(), 0);
+		
+		remove(nome_fonte.c_str());
+		remove("./a.out");
+		resultado.clear();
 		memset(arq_fonte, 0, 5000);
 	}
 

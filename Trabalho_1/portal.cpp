@@ -42,9 +42,9 @@ int main(int argc, char *argv[]) {
 void *recebe_arquivos_fonte(void *meu_socket){
 	int sock = *(int*)meu_socket;
 	int tamanho_dado_lido;
-	char arq_fonte[5000];
-	int meu_socket_server; 
-	EnderecoHandler addrServidores((char*)"172.27.1.209", 18900);
+	char arq_fonte[5000], resposta[1000];
+	int meu_socket_server, recebidos = 0; 
+	EnderecoHandler addrServidores((char*)"127.0.0.1", 18900);
 	//EnderecoHandler addrServidores[3] = {EnderecoHandler(ip_maquina_1_aqui, 18900), EnderecoHandler(ip_maquina_2_aqui, 18901), EnderecoHandler(ip_maquina_3_aqui, 18902)};
 
 	meu_socket_server = socket(AF_INET, SOCK_STREAM, 0);
@@ -61,7 +61,12 @@ void *recebe_arquivos_fonte(void *meu_socket){
 	while((tamanho_dado_lido = recv(sock, arq_fonte, 5000, 0)) > 0){
 
 		send(meu_socket_server, arq_fonte, strlen(arq_fonte), 0);
-		cout << arq_fonte << endl;
+		
+		recebidos = recv(meu_socket_server, resposta, 1000, 0);
+		resposta[recebidos] = '\0';
+
+		send(sock, resposta, 1000, 0);
+		
 		memset(arq_fonte, 0, 5000);
 	}
 
