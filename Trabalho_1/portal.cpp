@@ -19,7 +19,7 @@ int main(int argc, char *argv[]) {
     int meu_socket, novo_socket, addr_len, *novo_sock;
 	EnderecoHandler meu_addr(INADDR_ANY, 47006), clienteAddr;
 	string formaEscalonamento = argv[1];
-
+	
 	meu_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
 	meu_addr.bindarComSocket(meu_socket);
