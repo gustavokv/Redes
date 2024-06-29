@@ -14,7 +14,8 @@ using namespace std;
 
 void *compila_arquivos_fonte(void *meu_socket);
 void coloca_em_arquivo(string arq_fonte, string *nome_fonte);
-void le_arquivo_insere_array(string *resultado);
+void le_resultado_insere_array(string *resultado);
+void le_erro_insere_array(string *resultado);
 
 int main(){
     EnderecoHandler meu_addr(INADDR_ANY, 18900), portalAddr;
@@ -52,8 +53,18 @@ void coloca_em_arquivo(string arq_fonte, string *nome_fonte){
 	arq.close();
 }
 
-void le_arquivo_insere_array(string *resultado){
+void le_resultado_insere_array(string *resultado){
 	FILE *fp_in = popen("./a.out", "r");
+	char c;
+
+	while(fread(&c, sizeof(char), 1, fp_in))
+		*resultado += c;
+
+	fclose(fp_in);
+}
+
+void le_erro_insere_array(string *resultado){
+	FILE *fp_in = fopen("erro.txt", "r");
 	char c;
 
 	while(fread(&c, sizeof(char), 1, fp_in))
@@ -64,9 +75,10 @@ void le_arquivo_insere_array(string *resultado){
 
 void *compila_arquivos_fonte(void *meu_socket){
     int sock = *(int*)meu_socket, enviados;
-	int tamanho_dado_lido;
+	int tamanho_dado_lido, ini_arq_erro, fim_arq_erro;
 	char arq_fonte[5000], comandoComp[100];
 	string nome_fonte, resultado;
+	ifstream erro_arq;
 
 	//receber mensagem do cliente
 	while((tamanho_dado_lido = recv(sock, arq_fonte, 5000, 0)) > 0){
@@ -76,15 +88,27 @@ void *compila_arquivos_fonte(void *meu_socket){
 
 		strcpy(comandoComp, "g++ ");
 		strcat(comandoComp, nome_fonte.c_str());
+		strcat(comandoComp, " 2>> erro.txt");
 
 		system(comandoComp); //Compila o arquivo
-		
-		le_arquivo_insere_array(&resultado);
+
+		erro_arq.open("erro.txt");
+		ini_arq_erro = erro_arq.tellg();
+		erro_arq.seekg(0, ios::end);
+		fim_arq_erro = erro_arq.tellg();
+
+		if(fim_arq_erro - ini_arq_erro == 0){
+			le_resultado_insere_array(&resultado);
+			remove("./a.out");
+		}
+		else
+			le_erro_insere_array(&resultado);
 
 		send(sock, resultado.c_str(), resultado.length(), 0);
-		
+
+		erro_arq.close();
+		remove("erro.txt");		
 		remove(nome_fonte.c_str());
-		remove("./a.out");
 		resultado.clear();
 		memset(arq_fonte, 0, 5000);
 	}
