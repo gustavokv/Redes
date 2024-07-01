@@ -1,28 +1,37 @@
-all:	servidor portal cliente
+# Makefile for compiling cliente.cpp, servidor.cpp, and portal.cpp
 
-servidor:	servidor.o includes/EnderecoHandler.o
-	g++ servidor.o includes/EnderecoHandler.o -o servidor
+# Compiler
+CXX = g++
+# Compiler flags
+CXXFLAGS = -std=c++11 -Wall
 
-portal:	portal.o includes/EnderecoHandler.o
-	g++ portal.o includes/EnderecoHandler.o -o portal
+# Source files
+CLIENTE_SRC = cliente.cpp includes/clienteUteis.cpp includes/EnderecoHandler.cpp
+SERVIDOR_SRC = servidor.cpp includes/EnderecoHandler.cpp
+PORTAL_SRC = portal.cpp includes/EnderecoHandler.cpp
 
-cliente:	cliente.o includes/EnderecoHandler.o includes/clienteUteis.o
-	g++ cliente.o includes/EnderecoHandler.o includes/clienteUteis.o -o cliente
-	
-servidor.o:	servidor.cpp
-	g++ -c servidor.cpp
+# Object files
+CLIENTE_OBJ = $(CLIENTE_SRC:.cpp=.o)
+SERVIDOR_OBJ = $(SERVIDOR_SRC:.cpp=.o)
+PORTAL_OBJ = $(PORTAL_SRC:.cpp=.o)
 
-portal.o:	portal.cpp
-	g++ -c portal.cpp
+# Targets
+all: cliente servidor portal
 
-cliente.o:	cliente.cpp
-	g++ -c cliente.cpp
+cliente: $(CLIENTE_OBJ)
+	$(CXX) $(CXXFLAGS) -o cliente $(CLIENTE_OBJ)
 
-EnderecoHandler.o:	includes/EnderecoHandler.cpp
-	g++ -c includes/EnderecoHandler.cpp
+servidor: $(SERVIDOR_OBJ)
+	$(CXX) $(CXXFLAGS) -o servidor $(SERVIDOR_OBJ)
 
-clienteUteis.o:	includes/clienteUteis.cpp
-	g++ -c includes/clienteUteis.cpp
-	
+portal: $(PORTAL_OBJ)
+	$(CXX) $(CXXFLAGS) -o portal $(PORTAL_OBJ)
+
+# Compile source files
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+# Clean
 clean:
-	rm *.o includes/*.o servidor portal cliente
+	rm -f cliente servidor portal $(CLIENTE_OBJ) $(SERVIDOR_OBJ) $(PORTAL_OBJ)
+
