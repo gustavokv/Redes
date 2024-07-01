@@ -44,7 +44,7 @@ void *recebe_arquivos_fonte(void *meu_socket){
 	int tamanho_dado_lido;
 	char arq_fonte[5000], resposta[1000];
 	int meu_socket_server, recebidos = 0; 
-	EnderecoHandler addrServidores((char*)"127.0.0.1", 18900);
+	EnderecoHandler addrServidores((char*)"172.27.1.209", 18900);
 	//EnderecoHandler addrServidores[3] = {EnderecoHandler(ip_maquina_1_aqui, 18900), EnderecoHandler(ip_maquina_2_aqui, 18901), EnderecoHandler(ip_maquina_3_aqui, 18902)};
 
 	meu_socket_server = socket(AF_INET, SOCK_STREAM, 0);
