@@ -77,23 +77,26 @@ void *recebe_arquivos_fonte(void *meu_socket){
 		if(formaEscalonamento == "rr"){
 			if(recebidos[0] == 0){
 				send(socket_portal_servidor[0], arq_fonte, strlen(arq_fonte), 0);
-				resposta[recebidos[0]] = '\0';
 			}
 			else if(recebidos[1] == 0){
 				send(socket_portal_servidor[1], arq_fonte, strlen(arq_fonte), 0);
-				resposta[recebidos[1]] = '\0';
 			}
 			else if(recebidos[2] == 0){
 				send(socket_portal_servidor[2], arq_fonte, strlen(arq_fonte), 0);
-				resposta[recebidos[2]] = '\0';
 			}
 
-			if(recebidos[0] = recv(socket_portal_servidor[0], resposta, 1000, 0))
+			if((recebidos[0] = recv(socket_portal_servidor[0], resposta, 1000, 0)) > 0){
+				resposta[recebidos[0]] = '\0';
 				recebidos[0] = 0;
-			else if(recebidos[1] = recv(socket_portal_servidor[1], resposta, 1000, 0))
+			}
+			else if((recebidos[1] = recv(socket_portal_servidor[1], resposta, 1000, 0)) > 0){
+				resposta[recebidos[1]] = '\0';
 				recebidos[1] = 0;
-			else if(recebidos[2] = recv(socket_portal_servidor[2], resposta, 1000, 0))
+			}
+			else if((recebidos[2] = recv(socket_portal_servidor[2], resposta, 1000, 0)) > 0 ){
+				resposta[recebidos[2]] = '\0';
 				recebidos[2] = 0;
+			}
 		}
 		else if(formaEscalonamento == "altr"){
 
