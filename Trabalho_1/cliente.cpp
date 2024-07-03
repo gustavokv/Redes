@@ -23,7 +23,10 @@ int main(int argc, char *argv[]){
     if(argc != 3)
         return -1;
 
-    int meu_socket = socket(AF_INET, SOCK_STREAM, 0);
+    int meu_socket_cliente = socket(AF_INET, SOCK_STREAM, 0);
+    const int liberar = 1;
+
+    setsockopt(meu_socket_cliente, SOL_SOCKET, SO_REUSEADDR, &liberar, sizeof(int));
 
     char *id_portal = argv[1], ip_portal[100]; /* IP/nome máquina */
     int porta_portal = atoi(argv[2]);
@@ -36,9 +39,9 @@ int main(int argc, char *argv[]){
 
     EnderecoHandler addr_portal(ip_portal, porta_portal);
 
-    addr_portal.bindarComSocket(meu_socket);
+    addr_portal.bindarComSocket(meu_socket_cliente);
 
-    if(connect(meu_socket, (struct sockaddr*)addr_portal.getAddrAddr(), sizeof(addr_portal.getAddr())) == -1){
+    if(connect(meu_socket_cliente, (struct sockaddr*)addr_portal.getAddrAddr(), sizeof(addr_portal.getAddr())) == -1){
         cout << "Erro em se conectar ao servidor." << endl;
         return 1;
     }
@@ -78,9 +81,9 @@ int main(int argc, char *argv[]){
                             while(arq.get(cDir))
                                 arqFonte += cDir;      
                             
-                            send(meu_socket, arqFonte.c_str(), arqFonte.length(), 0);
+                            send(meu_socket_cliente, arqFonte.c_str(), arqFonte.length(), 0);
 
-                            recebidos = recv(meu_socket, resposta, 1000, 0);
+                            recebidos = recv(meu_socket_cliente, resposta, 1000, 0);
                             resposta[recebidos] = '\0';
 
                             cout << resposta << endl;
@@ -100,7 +103,7 @@ int main(int argc, char *argv[]){
             le_diretorio_funcao_L();
     }while(1);
 
-    close(meu_socket);
+    close(meu_socket_cliente);
 
     return 0;
 }

@@ -19,23 +19,28 @@ void le_erro_insere_array(string *resultado);
 
 int main(){
     EnderecoHandler meu_addr(INADDR_ANY, 18900), portalAddr;
-    int meu_socket, novo_socket, *novo_sock, addr_len;
+    int meu_socket_servidor, novo_socket, *novo_sock, addr_len;
+	const int liberar = 1;
 
-    meu_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    meu_socket_servidor = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
-    meu_addr.bindarComSocket(meu_socket);
+	setsockopt(meu_socket_servidor, SOL_SOCKET, SO_REUSEADDR, &liberar, sizeof(int));
 
-    listen(meu_socket, 3);
+    meu_addr.bindarComSocket(meu_socket_servidor);
+
+    listen(meu_socket_servidor, 3);
 
     addr_len = sizeof(struct sockaddr_in);
 
-    while ((novo_socket = accept(meu_socket, (struct sockaddr *)portalAddr.getAddrAddr(), (socklen_t *)&addr_len)) != -1){
+    while ((novo_socket = accept(meu_socket_servidor, (struct sockaddr *)portalAddr.getAddrAddr(), (socklen_t *)&addr_len)) != -1){
 		pthread_t sniffer_thread;
 		novo_sock = (int*)malloc(1);
 		*novo_sock = novo_socket;
 
 		pthread_create(&sniffer_thread, NULL, compila_arquivos_fonte, (void*) novo_sock);
     }
+
+	close(meu_socket_servidor);
 
     return 0;
 }
