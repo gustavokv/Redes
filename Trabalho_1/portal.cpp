@@ -46,14 +46,15 @@ int main(int argc, char *argv[]) {
 
 void *recebe_arquivos_fonte(void *meu_socket){
 	int sock = *(int*)meu_socket;
-	int tamanho_dado_lido;
+	int tamanho_dado_lido, i = 0;
 	char arq_fonte[5000], resposta[1000];
-	int socket_portal_servidor[3], recebidos[3] = {0, 0, 0}; 
+	int socket_portal_servidor[3], recebidos = 0; 
 	const int liberar = 1;
-	// EnderecoHandler addrServidores((char*)"172.27.1.209", 18900);
 	EnderecoHandler addrServidores[3] = {EnderecoHandler((char*)"172.27.1.209", 18900), 
-										EnderecoHandler((char*)"172.27.1.209", 18901), 
-										EnderecoHandler((char*)"172.27.1.209", 18902)};
+										EnderecoHandler((char*)"172.27.1.209", 18900), 
+										EnderecoHandler((char*)"172.27.1.209", 18900)};
+
+	srand(time(NULL));
 
 	for(unsigned int i = 0;i < 3; i++)
 		socket_portal_servidor[i] = socket(AF_INET, SOCK_STREAM, 0);
@@ -75,34 +76,25 @@ void *recebe_arquivos_fonte(void *meu_socket){
 	//receber mensagem do cliente
 	while((tamanho_dado_lido = recv(sock, arq_fonte, 5000, 0)) > 0){
 		if(formaEscalonamento == "rr"){
-			if(recebidos[0] == 0){
-				send(socket_portal_servidor[0], arq_fonte, strlen(arq_fonte), 0);
-			}
-			else if(recebidos[1] == 0){
-				send(socket_portal_servidor[1], arq_fonte, strlen(arq_fonte), 0);
-			}
-			else if(recebidos[2] == 0){
-				send(socket_portal_servidor[2], arq_fonte, strlen(arq_fonte), 0);
-			}
+			send(socket_portal_servidor[i], arq_fonte, strlen(arq_fonte), 0);
+			recebidos = recv(socket_portal_servidor[i], resposta, 1000, 0);
+			resposta[recebidos] = '\0';
 
-			if((recebidos[0] = recv(socket_portal_servidor[0], resposta, 1000, 0)) > 0){
-				resposta[recebidos[0]] = '\0';
-				recebidos[0] = 0;
-			}
-			else if((recebidos[1] = recv(socket_portal_servidor[1], resposta, 1000, 0)) > 0){
-				resposta[recebidos[1]] = '\0';
-				recebidos[1] = 0;
-			}
-			else if((recebidos[2] = recv(socket_portal_servidor[2], resposta, 1000, 0)) > 0 ){
-				resposta[recebidos[2]] = '\0';
-				recebidos[2] = 0;
-			}
+			send(sock, resposta, 1000, 0);
+
+			i++;
+			if(i == 3)
+				i=0;
 		}
 		else if(formaEscalonamento == "altr"){
+			i = rand() % 2;
 
+			send(socket_portal_servidor[i], arq_fonte, strlen(arq_fonte), 0);
+			recebidos = recv(socket_portal_servidor[i], resposta, 1000, 0);
+			resposta[recebidos] = '\0';
+
+			send(sock, resposta, 1000, 0);
 		}
-
-		send(sock, resposta, 1000, 0);
 		
 		memset(arq_fonte, 0, 5000);
 	}
