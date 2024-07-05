@@ -75,6 +75,7 @@ void *recebe_arquivos_fonte(void *meu_socket){
 	}
 
 	pthread_mutex_lock(&mutex);
+	
 	//receber mensagem do cliente
 	while((tamanho_dado_lido = recv(sock, arq_fonte, 5000, 0)) > 0){
 		if(formaEscalonamento == "rr"){
@@ -98,12 +99,12 @@ void *recebe_arquivos_fonte(void *meu_socket){
 
 			send(sock, resposta, 1000, 0);
 		}
-
-		pthread_mutex_unlock(&mutex);
 		
 		memset(arq_fonte, 0, 5000);
 		memset(resposta, 0, 1000);
 	}
+
+	pthread_mutex_unlock(&mutex);
 
 	pthread_exit(0);
 	free(meu_socket);
