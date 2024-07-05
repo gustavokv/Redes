@@ -14,6 +14,8 @@
 using namespace std;
 
 static string formaEscalonamento;
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+char resposta[1000], arq_fonte[5000];;
 
 void *recebe_arquivos_fonte(void *);
 
@@ -47,7 +49,6 @@ int main(int argc, char *argv[]) {
 void *recebe_arquivos_fonte(void *meu_socket){
 	int sock = *(int*)meu_socket;
 	int tamanho_dado_lido, i = 0;
-	char arq_fonte[5000], resposta[1000];
 	int socket_portal_servidor[3], recebidos = 0; 
 	const int liberar = 1;
 	EnderecoHandler addrServidores[3] = {EnderecoHandler((char*)"172.27.1.209", 18900), 
@@ -73,6 +74,7 @@ void *recebe_arquivos_fonte(void *meu_socket){
 		cout << "Conectado" << endl;
 	}
 
+	pthread_mutex_lock(&mutex);
 	//receber mensagem do cliente
 	while((tamanho_dado_lido = recv(sock, arq_fonte, 5000, 0)) > 0){
 		if(formaEscalonamento == "rr"){
@@ -96,8 +98,11 @@ void *recebe_arquivos_fonte(void *meu_socket){
 
 			send(sock, resposta, 1000, 0);
 		}
+
+		pthread_mutex_unlock(&mutex);
 		
 		memset(arq_fonte, 0, 5000);
+		memset(resposta, 0, 1000);
 	}
 
 	pthread_exit(0);
