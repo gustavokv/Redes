@@ -76,6 +76,7 @@ void *recebe_arquivos_fonte(void *meu_socket){
 	//receber mensagem do cliente
 	while((tamanho_dado_lido = recv(sock, arq_fonte, 5000, 0)) > 0){
 		if(formaEscalonamento == "rr"){
+			cout << arq_fonte << endl;
 			send(socket_portal_servidor[i], arq_fonte, strlen(arq_fonte), 0);
 			recebidos = recv(socket_portal_servidor[i], resposta, 1000, 0);
 			resposta[recebidos] = '\0';
