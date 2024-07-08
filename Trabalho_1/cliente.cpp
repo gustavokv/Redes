@@ -5,6 +5,7 @@
 #include <dirent.h>
 #include <sstream>
 #include <fstream>
+#include <vector>
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -18,6 +19,7 @@
 using namespace std;
 
 void le_diretorio_funcao_L();
+string separa_string(string& string_entrada); 
 
 int main(int argc, char *argv[]){
     if(argc != 3)
@@ -55,6 +57,8 @@ int main(int argc, char *argv[]){
 
     do{
         getline(cin, cmd); /* Recebe no cliente os comando S ou L */
+
+        cmd = separa_string(cmd);
         
         if(cmd.substr(0, cmd.find(' ')) == "S"){ /* Comando para enviar os códigos fonte */
             DIR* dirp = opendir("./arquivos_fonte/"); /* arquivos_fonte é o diretório que está os arquivos fonte */
@@ -106,10 +110,35 @@ int main(int argc, char *argv[]){
         }
         else if(cmd.substr(0, cmd.find(' ')) == "L") /* Lista os códigos fonte para serem enviados */
             le_diretorio_funcao_L();
+
     }while(1);
 
     return 0;
 }
+
+/* Separa a string do comando */
+string separa_string(string& string_entrada){  
+    string delimitadores = "[,]";
+    string resultado; /* Armazena o resultado após a separação */
+    int ini_pos = 0; 
+    int fim_pos = 0; 
+
+    /* Executa o laço enquanto fim_pos não é igual a string::npos */
+    while ((fim_pos = string_entrada.find_first_of(delimitadores, ini_pos)) != string::npos) { 
+        if (fim_pos != ini_pos) { /* Verificando se a substring não é vazia */
+            resultado += string_entrada.substr(ini_pos, fim_pos - ini_pos); 
+        } 
+  
+        ini_pos = fim_pos + 1; /* Atualiza o ini_pos para a posição após o delimitador */
+    } 
+  
+    /* Extrai a substring de ini_pos para o final da string e concatena no resultado */
+    if (ini_pos != string_entrada.length()) { 
+        resultado += string_entrada.substr(ini_pos); 
+    } 
+
+    return resultado; 
+} 
 
 /* Mostra todos os arquivos disponíveis para enviar ao portal */
 void le_diretorio_funcao_L(){
