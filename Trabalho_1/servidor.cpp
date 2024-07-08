@@ -45,6 +45,7 @@ int main(){
     return 0;
 }
 
+/* Aqui o arquivo recebido é lido e colocado em um arquivo para que ocorra a compilação */
 void coloca_em_arquivo(string arq_fonte, string *nome_fonte){
 	*nome_fonte = arq_fonte.substr(0, arq_fonte.find(' '));
 	ofstream arq(*nome_fonte);

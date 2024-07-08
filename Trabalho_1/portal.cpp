@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <pthread.h>
+#include <semaphore.h>
 
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -14,8 +15,9 @@
 using namespace std;
 
 static string formaEscalonamento;
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 char resposta[1000], arq_fonte[5000];;
+sem_t x, y;
+int contadorThread = 0;
 
 void *recebe_arquivos_fonte(void *);
 
@@ -24,6 +26,9 @@ int main(int argc, char *argv[]) {
 	EnderecoHandler meu_addr(INADDR_ANY, 47006), clienteAddr;
 	formaEscalonamento = argv[1];
 	const int liberar = 1;
+
+	sem_init(&x, 0, 1);
+	sem_init(&y, 0, 1);
 	
 	socket_portal_cliente = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
@@ -51,11 +56,12 @@ void *recebe_arquivos_fonte(void *meu_socket){
 	int tamanho_dado_lido, i = 0;
 	int socket_portal_servidor[3], recebidos = 0; 
 	const int liberar = 1;
+	/* Endereço dos 3 servidores */
 	EnderecoHandler addrServidores[3] = {EnderecoHandler((char*)"172.27.1.209", 18900), 
 										EnderecoHandler((char*)"172.27.1.209", 18900), 
 										EnderecoHandler((char*)"172.27.1.209", 18900)};
 
-	srand(time(NULL));
+	srand(time(NULL)); /* Usado para sortear valores aleatórios seguindo o relógio do computador */
 
 	for(unsigned int i = 0;i < 3; i++)
 		socket_portal_servidor[i] = socket(AF_INET, SOCK_STREAM, 0);
@@ -74,7 +80,13 @@ void *recebe_arquivos_fonte(void *meu_socket){
 		cout << "Conectado" << endl;
 	}
 
-	pthread_mutex_lock(&mutex);
+	sem_wait(&x);
+	contadorThread++;
+
+	if(contadorThread == 1)
+		sem_wait(&y);
+
+	sem_post(&x);
 	
 	//receber mensagem do cliente
 	while((tamanho_dado_lido = recv(sock, arq_fonte, 5000, 0)) > 0){
@@ -104,7 +116,13 @@ void *recebe_arquivos_fonte(void *meu_socket){
 		memset(resposta, 0, 1000);
 	}
 
-	pthread_mutex_unlock(&mutex);
+	sem_wait(&x);
+	contadorThread--;
+
+	if(contadorThread == 0)
+		sem_post(&y);
+
+	sem_post(&x);
 
 	pthread_exit(0);
 	free(meu_socket);

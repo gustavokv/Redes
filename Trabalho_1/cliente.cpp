@@ -26,6 +26,7 @@ int main(int argc, char *argv[]){
     int meu_socket_cliente = socket(AF_INET, SOCK_STREAM, 0);
     const int liberar = 1;
 
+    /* Este comando faz com que não ocorra bug ao se reconectar aos programas */
     setsockopt(meu_socket_cliente, SOL_SOCKET, SO_REUSEADDR, &liberar, sizeof(int));
 
     char *id_portal = argv[1], ip_portal[100]; /* IP/nome máquina */
@@ -53,21 +54,21 @@ int main(int argc, char *argv[]){
     int recebidos;
 
     do{
-        getline(cin, cmd);
+        getline(cin, cmd); /* Recebe no cliente os comando S ou L */
         
         if(cmd.substr(0, cmd.find(' ')) == "S"){ /* Comando para enviar os códigos fonte */
-            DIR* dirp = opendir("./arquivos_fonte/");
+            DIR* dirp = opendir("./arquivos_fonte/"); /* arquivos_fonte é o diretório que está os arquivos fonte */
             struct dirent *dp;
 
-            istringstream tokenizer {cmd};
+            istringstream tokenizador {cmd}; /* Separa o comando em tokens */
             string token;
 
-            char dir[100], cDir;
+            char dir[100], char_dir;
             ifstream arq;
-            string arqFonte;
+            string arq_fonte;
 
             /* Separa os arquivos para serem enviados em tokens, abre eles, lê o conteúdo e envia ao portal */
-            while(tokenizer >> token){
+            while(tokenizador >> token){
                 if(token != "S"){
                     while ((dp = readdir(dirp)) != NULL) {
                         if(dp->d_name == token){
@@ -76,19 +77,19 @@ int main(int argc, char *argv[]){
 
                             arq.open(dir);
 
-                            arqFonte += dp->d_name;
-                            arqFonte += " ";
-                            while(arq.get(cDir))
-                                arqFonte += cDir;      
+                            arq_fonte += dp->d_name;
+                            arq_fonte += " ";
+                            while(arq.get(char_dir))
+                                arq_fonte += char_dir; /* Para caracter a caracter o conteúdo do arquivo fonte */    
                             
-                            send(meu_socket_cliente, arqFonte.c_str(), arqFonte.length(), 0);
+                            send(meu_socket_cliente, arq_fonte.c_str(), arq_fonte.length(), 0);
 
                             recebidos = recv(meu_socket_cliente, resposta, 1000, 0);
                             resposta[recebidos] = '\0';
 
                             cout << resposta << endl;
                             
-                            arqFonte.clear();
+                            arq_fonte.clear();
                             arq.close();
                         }            
                     }
