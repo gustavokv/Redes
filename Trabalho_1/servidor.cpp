@@ -12,6 +12,10 @@
 
 using namespace std;
 
+char arq_fonte[5000], comandoComp[100];
+string nome_fonte, resultado;
+ifstream erro_arq;
+
 void *compila_arquivos_fonte(void *meu_socket);
 void coloca_em_arquivo(string arq_fonte, string *nome_fonte);
 void le_resultado_insere_array(string *resultado);
@@ -82,9 +86,6 @@ void le_erro_insere_array(string *resultado){
 void *compila_arquivos_fonte(void *meu_socket){
     int sock = *(int*)meu_socket, enviados;
 	int tamanho_dado_lido, ini_arq_erro, fim_arq_erro;
-	char arq_fonte[5000], comandoComp[100];
-	string nome_fonte, resultado;
-	ifstream erro_arq;
 
 	//receber mensagem do cliente
 	while((tamanho_dado_lido = recv(sock, arq_fonte, 5000, 0)) > 0){

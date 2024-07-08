@@ -5,7 +5,6 @@
 #include <unistd.h>
 #include <errno.h>
 #include <pthread.h>
-#include <semaphore.h>
 
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -16,8 +15,6 @@ using namespace std;
 
 static string formaEscalonamento;
 char resposta[1000], arq_fonte[5000];;
-sem_t x, y;
-int contadorThread = 0;
 
 void *recebe_arquivos_fonte(void *);
 
@@ -26,9 +23,6 @@ int main(int argc, char *argv[]) {
 	EnderecoHandler meu_addr(INADDR_ANY, 47006), clienteAddr;
 	formaEscalonamento = argv[1];
 	const int liberar = 1;
-
-	sem_init(&x, 0, 1);
-	sem_init(&y, 0, 1);
 	
 	socket_portal_cliente = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
@@ -79,14 +73,6 @@ void *recebe_arquivos_fonte(void *meu_socket){
 		}
 		cout << "Conectado" << endl;
 	}
-
-	sem_wait(&x);
-	contadorThread++;
-
-	if(contadorThread == 1)
-		sem_wait(&y);
-
-	sem_post(&x);
 	
 	//receber mensagem do cliente
 	while((tamanho_dado_lido = recv(sock, arq_fonte, 5000, 0)) > 0){
@@ -115,14 +101,6 @@ void *recebe_arquivos_fonte(void *meu_socket){
 		memset(arq_fonte, 0, 5000);
 		memset(resposta, 0, 1000);
 	}
-
-	sem_wait(&x);
-	contadorThread--;
-
-	if(contadorThread == 0)
-		sem_post(&y);
-
-	sem_post(&x);
 
 	pthread_exit(0);
 	free(meu_socket);

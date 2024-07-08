@@ -42,12 +42,12 @@ int main(int argc, char *argv[]){
 
     addr_portal.bindarComSocket(meu_socket_cliente);
 
-    if(connect(meu_socket_cliente, (struct sockaddr*)addr_portal.getAddrAddr(), sizeof(addr_portal.getAddr())) == -1){
-        cout << "Erro em se conectar ao servidor." << endl;
-        return 1;
-    }
+    // if(connect(meu_socket_cliente, (struct sockaddr*)addr_portal.getAddrAddr(), sizeof(addr_portal.getAddr())) == -1){
+    //     cout << "Erro em se conectar ao servidor." << endl;
+    //     return 1;
+    // }
 
-    cout << "Conectado." << endl;
+    // cout << "Conectado." << endl;
 
     string cmd;
     char resposta[1000];
@@ -80,7 +80,9 @@ int main(int argc, char *argv[]){
                             arq_fonte += dp->d_name;
                             arq_fonte += " ";
                             while(arq.get(char_dir))
-                                arq_fonte += char_dir; /* Para caracter a caracter o conteúdo do arquivo fonte */    
+                                arq_fonte += char_dir; /* Para caracter a caracter o conteúdo do arquivo fonte */  
+
+                            connect(meu_socket_cliente, (struct sockaddr*)addr_portal.getAddrAddr(), sizeof(addr_portal.getAddr()));  
                             
                             send(meu_socket_cliente, arq_fonte.c_str(), arq_fonte.length(), 0);
 
@@ -88,6 +90,8 @@ int main(int argc, char *argv[]){
                             resposta[recebidos] = '\0';
 
                             cout << resposta << endl;
+
+                            close(meu_socket_cliente);
                             
                             arq_fonte.clear();
                             arq.close();
@@ -103,8 +107,6 @@ int main(int argc, char *argv[]){
         else if(cmd.substr(0, cmd.find(' ')) == "L") /* Lista os códigos fonte para serem enviados */
             le_diretorio_funcao_L();
     }while(1);
-
-    close(meu_socket_cliente);
 
     return 0;
 }
