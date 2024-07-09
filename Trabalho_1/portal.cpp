@@ -26,6 +26,8 @@ int main(int argc, char *argv[]) {
 	formaEscalonamento = argv[1];
 	const int liberar = 1;
 	
+	srand(time(NULL)); /* Usado para sortear valores aleatórios seguindo o relógio do computador */
+	
 	socket_portal_cliente = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
 	setsockopt(socket_portal_cliente, SOL_SOCKET, SO_REUSEADDR, &liberar, sizeof(int));
@@ -54,11 +56,9 @@ void *recebe_arquivos_fonte(void *meu_socket){
 	const int liberar = 1;
 	char resposta[1000], arq_fonte[5000];
 	/* Endereço dos 3 servidores */
-	EnderecoHandler addrServidores[3] = {EnderecoHandler((char*)"172.26.4.127", 18900), 
-										EnderecoHandler((char*)"172.26.4.203", 18900), 
-										EnderecoHandler((char*)"172.26.4.76", 18900)};
-
-	srand(time(NULL)); /* Usado para sortear valores aleatórios seguindo o relógio do computador */
+	EnderecoHandler addrServidores[3] = {EnderecoHandler((char*)"172.26.4.220", 18900), 
+										EnderecoHandler((char*)"172.26.4.202", 18900), 
+										EnderecoHandler((char*)"172.26.4.133", 18900)};
 
 	for(unsigned int i = 0;i < 3; i++)
 		socket_portal_servidor[i] = socket(AF_INET, SOCK_STREAM, 0);
@@ -80,8 +80,8 @@ void *recebe_arquivos_fonte(void *meu_socket){
 	//receber mensagem do cliente
 	while((tamanho_dado_lido = recv(sock, arq_fonte, 5000, 0)) > 0){
 		if(formaEscalonamento == "rr"){
+			cout << arq_fonte << endl;
 			m.lock();
-
 			send(socket_portal_servidor[i], arq_fonte, strlen(arq_fonte), 0);
 			recebidos = recv(socket_portal_servidor[i], resposta, 1000, 0);
 			resposta[recebidos] = '\0';
@@ -91,20 +91,20 @@ void *recebe_arquivos_fonte(void *meu_socket){
 			i++;
 			if(i == 3)
 				i=0;
-
 			m.unlock();
 		}
 		else if(formaEscalonamento == "altr"){
 			m.lock();
-
-			i = rand() % 2;
-
+			
+			i = rand() % 3;
+			
+			cout << "Servidor escohido: " << i << "\n" << arq_fonte << endl;
 			send(socket_portal_servidor[i], arq_fonte, strlen(arq_fonte), 0);
 			recebidos = recv(socket_portal_servidor[i], resposta, 1000, 0);
 			resposta[recebidos] = '\0';
 
 			send(sock, resposta, 1000, 0);
-
+			
 			m.unlock();
 		}
 		
