@@ -58,7 +58,7 @@ int main(int argc, char *argv[]){
     do{
         getline(cin, cmd); /* Recebe no cliente os comando S ou L */
 
-        //cmd = separa_string(cmd);
+        // cmd = separa_string(cmd);
         
         if(cmd.substr(0, cmd.find(' ')) == "S"){ /* Comando para enviar os códigos fonte */
             DIR* dirp = opendir("./arquivos_fonte/"); /* arquivos_fonte é o diretório que está os arquivos fonte */
@@ -147,7 +147,7 @@ void le_diretorio_funcao_L(){
 
     while ((dp = readdir(dirp)) != NULL) {
         if(strcmp(dp->d_name, ".") != 0 && strcmp(dp->d_name, "..") != 0)
-            cout << dp->d_name << endl;
+            cout << "[" << dp->d_name << "]" << endl;
 
         quantDir++;
     }
