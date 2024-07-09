@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <pthread.h>
+#include <mutex>
 
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -14,7 +15,8 @@
 using namespace std;
 
 static string formaEscalonamento;
-char resposta[1000], arq_fonte[5000];;
+int i=0;
+mutex m;
 
 void *recebe_arquivos_fonte(void *);
 
@@ -47,13 +49,14 @@ int main(int argc, char *argv[]) {
 
 void *recebe_arquivos_fonte(void *meu_socket){
 	int sock = *(int*)meu_socket;
-	int tamanho_dado_lido, i = 0;
+	int tamanho_dado_lido;
 	int socket_portal_servidor[3], recebidos = 0; 
 	const int liberar = 1;
+	char resposta[1000], arq_fonte[5000];
 	/* Endereço dos 3 servidores */
-	EnderecoHandler addrServidores[3] = {EnderecoHandler((char*)"172.27.1.209", 18900), 
-										EnderecoHandler((char*)"172.27.1.209", 18900), 
-										EnderecoHandler((char*)"172.27.1.209", 18900)};
+	EnderecoHandler addrServidores[3] = {EnderecoHandler((char*)"172.26.4.127", 18900), 
+										EnderecoHandler((char*)"172.26.4.203", 18900), 
+										EnderecoHandler((char*)"172.26.4.76", 18900)};
 
 	srand(time(NULL)); /* Usado para sortear valores aleatórios seguindo o relógio do computador */
 
@@ -77,7 +80,8 @@ void *recebe_arquivos_fonte(void *meu_socket){
 	//receber mensagem do cliente
 	while((tamanho_dado_lido = recv(sock, arq_fonte, 5000, 0)) > 0){
 		if(formaEscalonamento == "rr"){
-			cout << arq_fonte << endl;
+			m.lock();
+
 			send(socket_portal_servidor[i], arq_fonte, strlen(arq_fonte), 0);
 			recebidos = recv(socket_portal_servidor[i], resposta, 1000, 0);
 			resposta[recebidos] = '\0';
@@ -87,8 +91,12 @@ void *recebe_arquivos_fonte(void *meu_socket){
 			i++;
 			if(i == 3)
 				i=0;
+
+			m.unlock();
 		}
 		else if(formaEscalonamento == "altr"){
+			m.lock();
+
 			i = rand() % 2;
 
 			send(socket_portal_servidor[i], arq_fonte, strlen(arq_fonte), 0);
@@ -96,6 +104,8 @@ void *recebe_arquivos_fonte(void *meu_socket){
 			resposta[recebidos] = '\0';
 
 			send(sock, resposta, 1000, 0);
+
+			m.unlock();
 		}
 		
 		memset(arq_fonte, 0, 5000);
