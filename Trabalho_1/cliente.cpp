@@ -58,7 +58,7 @@ int main(int argc, char *argv[]){
     do{
         getline(cin, cmd); /* Recebe no cliente os comando S ou L */
 
-        // cmd = separa_string(cmd);
+        cmd = separa_string(cmd);
         
         if(cmd.substr(0, cmd.find(' ')) == "S"){ /* Comando para enviar os códigos fonte */
             DIR* dirp = opendir("./arquivos_fonte/"); /* arquivos_fonte é o diretório que está os arquivos fonte */
