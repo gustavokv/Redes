@@ -90,7 +90,6 @@ void *compila_arquivos_fonte(void *meu_socket){
 	//receber mensagem do cliente
 	while((tamanho_dado_lido = recv(sock, arq_fonte, 5000, 0)) > 0){
 		string str_fonte(arq_fonte);
-		cout << arq_fonte << endl;
 		
 		coloca_em_arquivo(str_fonte, &nome_fonte);
 

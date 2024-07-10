@@ -44,12 +44,7 @@ int main(int argc, char *argv[]){
 
     addr_portal.bindarComSocket(meu_socket_cliente);
 
-    if(connect(meu_socket_cliente, (struct sockaddr*)addr_portal.getAddrAddr(), sizeof(addr_portal.getAddr())) == -1){
-        cout << "Erro em se conectar ao servidor." << endl;
-        return 1;
-    }
-
-    cout << "Conectado." << endl;
+    connect(meu_socket_cliente, (struct sockaddr*)addr_portal.getAddrAddr(), sizeof(addr_portal.getAddr()));
 
     string cmd;
     char resposta[1000];
@@ -91,7 +86,7 @@ int main(int argc, char *argv[]){
                             recebidos = recv(meu_socket_cliente, resposta, 1000, 0);
                             resposta[recebidos] = '\0';
 
-                            cout << resposta << endl;
+                            cout << resposta;
                             
                             arq_fonte.clear();
                             arq.close();
