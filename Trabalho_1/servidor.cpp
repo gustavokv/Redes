@@ -10,16 +10,18 @@
 
 #include "includes/EnderecoHandler.h"
 
+#define MAX_BUF_SIZE 50000
+#define MAX_COMMAND_SIZE 200
+
 using namespace std;
 
-char arq_fonte[5000], comandoComp[100];
+char arq_fonte[MAX_BUF_SIZE], comandoComp[MAX_COMMAND_SIZE];
 string nome_fonte, resultado;
-ifstream erro_arq;
+ifstream erro_arq; /* Arquivo para captar erros e warnings da compilação */
 
 void *compila_arquivos_fonte(void *meu_socket);
 void coloca_em_arquivo(string arq_fonte, string *nome_fonte);
-void le_resultado_insere_array(string *resultado);
-void le_erro_insere_array(string *resultado);
+void le_resultado_insere_array(unsigned int tipo_arq, string *resultado);
 
 int main(){
     EnderecoHandler meu_addr(INADDR_ANY, 18900), portalAddr;
@@ -36,6 +38,7 @@ int main(){
 
     addr_len = sizeof(struct sockaddr_in);
 
+	/* Aceita as conexões do portal e cria uma thread para receber, compilar e reenviar o resultado */
     while ((novo_socket = accept(meu_socket_servidor, (struct sockaddr *)portalAddr.getAddrAddr(), (socklen_t *)&addr_len)) != -1){
 		pthread_t sniffer_thread;
 		novo_sock = (int*)malloc(1);
@@ -52,10 +55,10 @@ int main(){
 /* Aqui o arquivo recebido é lido e colocado em um arquivo para que ocorra a compilação */
 void coloca_em_arquivo(string arq_fonte, string *nome_fonte){
 	*nome_fonte = arq_fonte.substr(0, arq_fonte.find(' '));
-	ofstream arq(*nome_fonte);
+	ofstream arq(*nome_fonte); /* O nome do arquivo é o primeiro token do arquivo */
 	string::size_type i = arq_fonte.find(*nome_fonte);
 
-	if (i != string::npos)
+	if (i != string::npos) /* Tira o nome do arquivo do arquivo */
 		arq_fonte.erase(i, (*nome_fonte).length());
 
 	arq << arq_fonte;
@@ -63,19 +66,15 @@ void coloca_em_arquivo(string arq_fonte, string *nome_fonte){
 	arq.close();
 }
 
-void le_resultado_insere_array(string *resultado){
-	FILE *fp_in = popen("./a.out", "r");
+/* Abre o arquivo resultante ./a.out e coloca na string resultado */
+void le_resultado_insere_array(unsigned int tipo_arq, string *resultado){
+	FILE *fp_in;
 	char c;
 
-	while(fread(&c, sizeof(char), 1, fp_in))
-		*resultado += c;
-
-	fclose(fp_in);
-}
-
-void le_erro_insere_array(string *resultado){
-	FILE *fp_in = fopen("erro.txt", "r");
-	char c;
+	if(tipo_arq == 1)
+		fp_in = popen("./a.out", "r");
+	else
+		fp_in = fopen("erro.txt", "r");
 
 	while(fread(&c, sizeof(char), 1, fp_in))
 		*resultado += c;
@@ -87,8 +86,8 @@ void *compila_arquivos_fonte(void *meu_socket){
     int sock = *(int*)meu_socket, enviados;
 	int tamanho_dado_lido, ini_arq_erro, fim_arq_erro;
 
-	//receber mensagem do cliente
-	while((tamanho_dado_lido = recv(sock, arq_fonte, 5000, 0)) > 0){
+	/* Recebe arquivo do portal */
+	while((tamanho_dado_lido = recv(sock, arq_fonte, MAX_BUF_SIZE, 0)) > 0){
 		string str_fonte(arq_fonte);
 		
 		coloca_em_arquivo(str_fonte, &nome_fonte);
@@ -105,11 +104,11 @@ void *compila_arquivos_fonte(void *meu_socket){
 		fim_arq_erro = erro_arq.tellg();
 
 		if(fim_arq_erro - ini_arq_erro == 0){
-			le_resultado_insere_array(&resultado);
+			le_resultado_insere_array(1, &resultado);
 			remove("./a.out");
 		}
 		else
-			le_erro_insere_array(&resultado);
+			le_resultado_insere_array(0, &resultado);
 
 		send(sock, resultado.c_str(), resultado.length(), 0);
 
@@ -117,7 +116,7 @@ void *compila_arquivos_fonte(void *meu_socket){
 		remove("erro.txt");		
 		remove(nome_fonte.c_str());
 		resultado.clear();
-		memset(arq_fonte, 0, 5000);
+		memset(arq_fonte, 0, MAX_BUF_SIZE);
 	}
 
 	pthread_exit(0);

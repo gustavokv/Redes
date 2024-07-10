@@ -16,10 +16,9 @@
 #include "includes/clienteUteis.h"
 #include "includes/EnderecoHandler.h"
 
-using namespace std;
+#define MAX_BUF_SIZE 50000
 
-void le_diretorio_funcao_L();
-string separa_string(string& string_entrada); 
+using namespace std;
 
 int main(int argc, char *argv[]){
     if(argc != 3)
@@ -76,17 +75,17 @@ int main(int argc, char *argv[]){
 
                             arq.open(dir);
 
-                            arq_fonte += dp->d_name;
+                            arq_fonte += dp->d_name; /* Coloca no arquivo a ser enviado o nome dele */
                             arq_fonte += " ";
                             while(arq.get(char_dir))
                                 arq_fonte += char_dir; /* Para caracter a caracter o conteúdo do arquivo fonte */  
                             
                             send(meu_socket_cliente, arq_fonte.c_str(), arq_fonte.length(), 0);
 
-                            recebidos = recv(meu_socket_cliente, resposta, 1000, 0);
+                            recebidos = recv(meu_socket_cliente, resposta, MAX_BUF_SIZE, 0);
                             resposta[recebidos] = '\0';
 
-                            cout << resposta;
+                            cout << resposta << endl;
                             
                             arq_fonte.clear();
                             arq.close();
@@ -107,48 +106,4 @@ int main(int argc, char *argv[]){
     close(meu_socket_cliente);
 
     return 0;
-}
-
-/* Separa a string do comando */
-string separa_string(string& string_entrada){  
-    string delimitadores = "[,]";
-    string resultado; /* Armazena o resultado após a separação */
-    int ini_pos = 0; 
-    int fim_pos = 0; 
-
-    /* Executa o laço enquanto fim_pos não é igual a string::npos */
-    while ((fim_pos = string_entrada.find_first_of(delimitadores, ini_pos)) != string::npos) { 
-        if (fim_pos != ini_pos) { /* Verificando se a substring não é vazia */
-            resultado += string_entrada.substr(ini_pos, fim_pos - ini_pos); 
-        } 
-  
-        ini_pos = fim_pos + 1; /* Atualiza o ini_pos para a posição após o delimitador */
-    } 
-  
-    /* Extrai a substring de ini_pos para o final da string e concatena no resultado */
-    if (ini_pos != string_entrada.length()) { 
-        resultado += string_entrada.substr(ini_pos); 
-    } 
-
-    return resultado; 
-} 
-
-/* Mostra todos os arquivos disponíveis para enviar ao portal */
-void le_diretorio_funcao_L(){
-    DIR* dirp = opendir("./arquivos_fonte/");
-    unsigned int quantDir=0;
-
-    struct dirent *dp;
-
-    while ((dp = readdir(dirp)) != NULL) {
-        if(strcmp(dp->d_name, ".") != 0 && strcmp(dp->d_name, "..") != 0)
-            cout << "[" << dp->d_name << "]" << endl;
-
-        quantDir++;
-    }
-
-    if(quantDir == 0)
-        cout << "L 0" << endl;
-
-    closedir(dirp);
 }
